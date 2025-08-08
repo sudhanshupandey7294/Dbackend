@@ -11,7 +11,8 @@ app.use(cors());
 app.use(express.json());
 
 // app.use('/api/contacts', contactRoutes);
-app.use("/contact", contactSaveRoutes);
+app.use("/api/contact", contactSaveRoutes);
+
 app.use('/api/auth', authRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {
