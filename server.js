@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 // const contactRoutes = require('./routes/contact');
 const contactSaveRoutes = require("./routes/contactRoutes");
@@ -13,6 +14,7 @@ app.use(express.json());
 // app.use('/api/contacts', contactRoutes);
 app.use("/api/contact", contactSaveRoutes);
 
+app.use('/api/chat', chatRoutes);
 app.use('/api/auth', authRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {
