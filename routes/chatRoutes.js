@@ -1,10 +1,10 @@
-// server/routes/chatRoutes.js
 const express = require('express');
 const router = express.Router();
-const { CohereClient } = require('cohere-ai'); // Correct import
+const { CohereClient } = require('cohere-ai');
 const Conversation = require('../models/Conversation');
 
-const cohere = new CohereClient({ apiKey: process.env.COHERE_API_KEY });
+// ✅ Use `token` not `apiKey`
+const cohere = new CohereClient({ token: process.env.COHERE_API_KEY });
 
 router.post('/', async (req, res) => {
   try {
@@ -29,31 +29,28 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Add user message
     convo.messages.push({ role: 'user', content: message });
 
-    // Limit context
     const CONTEXT_TURNS = 12;
     const lastMessages = convo.messages.slice(-CONTEXT_TURNS);
 
-   // Cohere chat call
-const chatResponse = await cohere.chat({
-  model: process.env.COHERE_MODEL || 'command-r-plus',
-  message: message, // ✅ use `message` instead of `messages` for cohere.chat
-  temperature: 0.6,
-  max_tokens: 400
-});
+    // ✅ Cohere API request
+    const chatResponse = await cohere.chat({
+      model: process.env.COHERE_MODEL || 'command-r-plus',
+      message,
+      temperature: 0.6,
+      max_tokens: 400
+    });
 
-    // Extract text safely
-let assistantText = '';
-if (chatResponse?.text) {
-  assistantText = chatResponse.text.trim();
-} else if (chatResponse?.message?.content?.[0]?.text) {
-  assistantText = chatResponse.message.content[0].text.trim();
-} else {
-  assistantText = 'Sorry, I could not generate a response.';
-}
-    // Save assistant message
+    let assistantText = '';
+    if (chatResponse?.text) {
+      assistantText = chatResponse.text.trim();
+    } else if (chatResponse?.message?.content?.[0]?.text) {
+      assistantText = chatResponse.message.content[0].text.trim();
+    } else {
+      assistantText = 'Sorry, I could not generate a response.';
+    }
+
     convo.messages.push({ role: 'assistant', content: assistantText });
     convo.updatedAt = new Date();
     await convo.save();
