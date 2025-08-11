@@ -36,27 +36,23 @@ router.post('/', async (req, res) => {
     const CONTEXT_TURNS = 12;
     const lastMessages = convo.messages.slice(-CONTEXT_TURNS);
 
-    // Cohere chat call
-    const chatResponse = await cohere.chat({
-      model: process.env.COHERE_MODEL || 'command-r-plus',
-      messages: lastMessages.map(m => ({
-        role: m.role,
-        content: m.content
-      })),
-      max_tokens: 400,
-      temperature: 0.6
-    });
+   // Cohere chat call
+const chatResponse = await cohere.chat({
+  model: process.env.COHERE_MODEL || 'command-r-plus',
+  message: message, // ✅ use `message` instead of `messages` for cohere.chat
+  temperature: 0.6,
+  max_tokens: 400
+});
 
     // Extract text safely
-    let assistantText = '';
-    if (chatResponse?.message?.content?.[0]?.text) {
-      assistantText = chatResponse.message.content[0].text.trim();
-    } else if (chatResponse?.text) {
-      assistantText = chatResponse.text.trim();
-    } else {
-      assistantText = 'Sorry, I could not generate a response.';
-    }
-
+let assistantText = '';
+if (chatResponse?.text) {
+  assistantText = chatResponse.text.trim();
+} else if (chatResponse?.message?.content?.[0]?.text) {
+  assistantText = chatResponse.message.content[0].text.trim();
+} else {
+  assistantText = 'Sorry, I could not generate a response.';
+}
     // Save assistant message
     convo.messages.push({ role: 'assistant', content: assistantText });
     convo.updatedAt = new Date();
